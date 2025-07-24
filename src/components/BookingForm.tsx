@@ -18,8 +18,9 @@ const bookingSchema = z.object({
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
   tickets: z.string().min(1, "Please select number of tickets"),
   showtime: z.string().min(1, "Please select a showtime"),
-  webhookUrl: z.string().url("Please enter a valid webhook URL").optional(),
 });
+
+const WEBHOOK_URL = "https://aadivijay18.app.n8n.cloud/webhook/booking-response";
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
@@ -41,7 +42,6 @@ export const BookingForm = ({ movieTitle, showtimes }: BookingFormProps) => {
       phone: "",
       tickets: "",
       showtime: "",
-      webhookUrl: "",
     },
   });
 
@@ -56,17 +56,15 @@ export const BookingForm = ({ movieTitle, showtimes }: BookingFormProps) => {
         timestamp: new Date().toISOString(),
       };
 
-      // If webhook URL is provided, send the booking data
-      if (data.webhookUrl) {
-        await fetch(data.webhookUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          mode: "no-cors",
-          body: JSON.stringify(bookingData),
-        });
-      }
+      // Send booking data to the webhook
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "no-cors",
+        body: JSON.stringify(bookingData),
+      });
 
       setIsSuccess(true);
       toast({
@@ -244,30 +242,7 @@ export const BookingForm = ({ movieTitle, showtimes }: BookingFormProps) => {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="webhookUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-deep-blue font-semibold">
-                    Webhook URL (Optional)
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="Enter your n8n webhook URL for booking confirmation"
-                      className="border-border/50 focus:border-saffron focus:ring-saffron/20"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter your n8n webhook URL to receive booking confirmation via email
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button 
+            <Button
               type="submit" 
               className="w-full bg-gradient-to-r from-deep-blue to-primary hover:from-primary hover:to-deep-blue transition-all duration-300 shadow-lg hover:shadow-xl border-0 py-6 text-lg font-semibold"
               disabled={isLoading}
