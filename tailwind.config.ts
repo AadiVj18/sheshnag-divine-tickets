@@ -61,7 +61,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Spiritual colors
+				saffron: 'hsl(var(--saffron))',
+				'deep-blue': 'hsl(var(--deep-blue))',
+				'spiritual-gold': 'hsl(var(--spiritual-gold))',
+				'divine-white': 'hsl(var(--divine-white))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
