@@ -1,14 +1,21 @@
-import { Film, Star } from "lucide-react";
+import { Film, Star, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import lordShivaIcon from "@/assets/lord-shiva-icon.png";
 
 export const Header = () => {
+  const testApiConnection = () => {
+    const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+    if (apiKey && apiKey !== 'your_tmdb_api_key_here') {
+      alert('✅ API Key is configured! Ready to fetch real movie data.');
+    } else {
+      alert('⚠️ No API key configured. Using local movie data.');
+    }
+  };
+
   return (
     <header className="bg-gradient-to-r from-deep-blue to-primary text-white shadow-xl relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-r from-deep-blue/90 to-primary/90"></div>
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
       
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -37,7 +44,7 @@ export const Header = () => {
           </div>
 
           {/* Navigation/Features */}
-          <div className="flex items-center space-x-6 text-sm">
+          <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2 bg-white/10 rounded-full px-4 py-2 backdrop-blur-sm">
               <Film className="w-4 h-4" />
               <span>Now Showing</span>
@@ -46,6 +53,17 @@ export const Header = () => {
               <Star className="w-4 h-4 text-saffron" />
               <span>Premium Experience</span>
             </div>
+            
+            {/* Simple API Test Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={testApiConnection}
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Test API
+            </Button>
           </div>
         </div>
         

@@ -1,73 +1,103 @@
 import { Header } from "@/components/Header";
 import { MovieCard } from "@/components/MovieCard";
 import { Badge } from "@/components/ui/badge";
-import { Film, Sparkles, Clock, MapPin } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Film, Sparkles, Clock, MapPin, AlertCircle, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
-// Mock movie data - in a real app, this would come from an API
-const mockMovies = [
+// Fallback movie data
+const fallbackMovies = [
   {
     id: "1",
-    title: "Avatar: The Way of Water",
-    poster: "https://images.unsplash.com/photo-1489599133175-7f3a5b38b0c1?w=400&h=600&fit=crop",
-    rating: 7.8,
-    duration: "3h 12min",
-    genre: "Sci-Fi",
-    showtimes: ["10:00 AM", "1:30 PM", "5:00 PM", "8:30 PM"],
-    description: "Set more than a decade after the events of the first film, Avatar: The Way of Water tells the story of the Sully family."
+    title: "Saiyaara",
+    poster: "https://images.moneycontrol.com/static-mcnews/2025/07/20250718081410_saiyaara.jpg?impolicy=website&width=770&height=431",
+    rating: 8.5,
+    duration: "2h 20min",
+    genre: "Drama",
+    showtimes: ["12:00PM", "3:00PM", "6:00PM", "9:00PM"],
+    description: "Saiyaara is a heart-touching drama that explores the journey of love, loss, and hope."
   },
   {
     id: "2",
-    title: "Top Gun: Maverick",
-    poster: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=400&h=600&fit=crop",
-    rating: 8.7,
-    duration: "2h 11min",
-    genre: "Action",
-    showtimes: ["11:00 AM", "2:00 PM", "6:00 PM", "9:00 PM"],
-    description: "After thirty years, Maverick is still pushing the envelope as a top naval aviator."
-  },
-  {
-    id: "3",
-    title: "Spider-Man: No Way Home",
-    poster: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=600&fit=crop",
-    rating: 8.2,
-    duration: "2h 28min",
-    genre: "Action",
-    showtimes: ["10:30 AM", "1:45 PM", "5:15 PM", "8:45 PM"],
-    description: "Spider-Man's identity is revealed to the entire world, and he can no longer separate his normal life from his superhero responsibilities."
-  },
-  {
-    id: "4",
-    title: "Dune",
-    poster: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
-    rating: 8.1,
-    duration: "2h 35min",
-    genre: "Sci-Fi",
-    showtimes: ["9:30 AM", "1:00 PM", "4:30 PM", "8:00 PM"],
-    description: "Paul Atreides leads nomadic tribes in a revolt against the galactic emperor and his father's evil nemesis."
-  },
-  {
-    id: "5",
-    title: "The Batman",
-    poster: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=400&h=600&fit=crop",
-    rating: 7.9,
-    duration: "2h 56min",
-    genre: "Action",
-    showtimes: ["10:15 AM", "2:30 PM", "6:30 PM", "9:30 PM"],
-    description: "Batman ventures into Gotham City's underworld when a sadistic killer leaves behind a trail of cryptic clues."
-  },
-  {
-    id: "6",
-    title: "Interstellar",
-    poster: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=400&h=600&fit=crop",
-    rating: 8.6,
-    duration: "2h 49min",
-    genre: "Sci-Fi",
-    showtimes: ["9:00 AM", "12:45 PM", "4:15 PM", "7:45 PM"],
-    description: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival."
+    title: "Ramayana",
+    poster: "https://images.ctfassets.net/3sjsytt3tkv5/4TZbGmtfPDnaK6oUTvpn55/5f293d924de5cf48d419f3460603de5d/1920X1080_DNEG_RD_With_Logo.jpg",
+    rating: 9.0,
+    duration: "2h 40min",
+    genre: "Mythology, Drama",
+    showtimes: ["12:00PM", "3:00PM", "6:00PM", "9:00PM"],
+    description: "A grand retelling of the epic Ramayana, starring Ranbir Kapoor and Sai Pallavi."
   }
 ];
 
 const Index = () => {
+  const [movies, setMovies] = useState(fallbackMovies);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      
+      if (!apiKey || apiKey === 'your_tmdb_api_key_here') {
+        console.log('No API key configured, using fallback data');
+        setMovies(fallbackMovies);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch popular movies from TMDB
+      const response = await fetch(
+        `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_origin_country=IN&sort_by=popularity.desc&include_adult=false&language=en-US&page=1`
+      );
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform TMDB data to our format
+      const transformedMovies = data.results.slice(0, 8).map((movie: any) => ({
+        id: movie.id.toString(),
+        title: movie.title,
+        poster: movie.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : fallbackMovies[0].poster, // Fallback poster if none available
+        rating: Math.round((movie.vote_average / 2) * 10) / 10, // Convert 10-point scale to 5-point
+        duration: movie.runtime 
+          ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}min`
+          : "2h 30min", // Default duration
+        genre: movie.genre_ids ? "Bollywood" : "Drama", // Default genre
+        showtimes: ["12:00PM", "3:00PM", "6:00PM", "9:00PM"],
+        description: movie.overview || "Experience the magic of cinema with this latest release."
+      }));
+
+      if (transformedMovies.length > 0) {
+        setMovies(transformedMovies);
+      } else {
+        setMovies(fallbackMovies);
+      }
+      
+    } catch (err) {
+      console.error('Error fetching movies:', err);
+      setError('Failed to fetch movies from API. Using local data.');
+      setMovies(fallbackMovies);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-divine-white via-background to-secondary/20">
       <Header />
@@ -118,30 +148,59 @@ const Index = () => {
             <Badge className="bg-gradient-to-r from-deep-blue to-primary text-white border-0 px-4 py-2">
               Latest Releases
             </Badge>
-            <Badge className="bg-gradient-to-r from-saffron to-accent text-white border-0 px-4 py-2">
-              Premium Quality
+            <Badge variant="outline" className="px-4 py-2">
+              {movies.length} Movies Available
             </Badge>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {mockMovies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
-      </main>
+        {/* Error Alert */}
+        {error && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              {error}
+              <button
+                onClick={clearError}
+                className="ml-2 underline hover:no-underline"
+              >
+                Dismiss
+              </button>
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-deep-blue to-primary text-white py-8 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-white/80 mb-2">
-            © 2024 Sheshnag Cinema. All rights reserved.
-          </p>
-          <p className="text-white/60 text-sm italic">
-            "Blessed by divine grace, powered by cinematic excellence"
-          </p>
-        </div>
-      </footer>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <span className="text-muted-foreground">Loading movies from TMDB...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Movies Grid */}
+        {!loading && movies.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {movies.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
+        )}
+
+        {/* Refresh Button */}
+        {!loading && (
+          <div className="text-center mt-8">
+            <button
+              onClick={fetchMovies}
+              className="bg-gradient-to-r from-deep-blue to-primary text-white px-6 py-3 rounded-lg hover:from-primary hover:to-deep-blue transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              Refresh Movies
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
