@@ -244,6 +244,7 @@ export default function BookingPage() {
             <BookingForm 
               movieTitle={movie.title}
               showtimes={movie.showtimes}
+              movieId={movie.id}
             />
           </div>
         </div>

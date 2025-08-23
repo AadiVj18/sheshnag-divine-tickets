@@ -1,8 +1,13 @@
-import { Film, Star, Settings } from "lucide-react";
+import { Film, Star, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import lordShivaIcon from "@/assets/lord-shiva-icon.png";
+import { useState } from "react";
+import { AdminPanel } from "./AdminPanel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Header = () => {
+  const [showAdmin, setShowAdmin] = useState(false);
+
   const testApiConnection = () => {
     const apiKey = import.meta.env.VITE_TMDB_API_KEY;
     if (apiKey && apiKey !== 'your_tmdb_api_key_here') {
@@ -54,18 +59,38 @@ export const Header = () => {
               <span>Premium Experience</span>
             </div>
             
-            {/* Simple API Test Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={testApiConnection}
-              className="text-white/80 hover:text-white hover:bg-white/10"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Test API
-            </Button>
-          </div>
-        </div>
+                               {/* Simple API Test Button */}
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     onClick={testApiConnection}
+                     className="text-white/80 hover:text-white hover:bg-white/10"
+                   >
+                     <Settings className="w-4 h-4 mr-2" />
+                     Test API
+                   </Button>
+
+                   {/* Admin Panel Button */}
+                   <Dialog open={showAdmin} onOpenChange={setShowAdmin}>
+                     <DialogTrigger asChild>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         className="text-white/80 hover:text-white hover:bg-white/10"
+                       >
+                         <Users className="w-4 h-4 mr-2" />
+                         Admin
+                       </Button>
+                     </DialogTrigger>
+                     <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                       <DialogHeader>
+                         <DialogTitle>Admin Dashboard</DialogTitle>
+                       </DialogHeader>
+                       <AdminPanel />
+                     </DialogContent>
+                   </Dialog>
+                 </div>
+               </div>
         
         {/* Tagline */}
         <div className="mt-6 text-center">
